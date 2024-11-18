@@ -1,0 +1,27 @@
+dataset_home: ../../datasets/
+dataset_dir: _test/
+
+working_dir: working_dir/
+doc_file: dijkstra_mini.txt
+prompts_file: prompts.yaml
+
+llm_model_type: openai-like
+embedding_model_type: ollama
+
+llm_model_name: qwen-plus
+embedding_model: nomic-embed-text
+
+api_key_env: DASHSCOPE_API_KEY
+llm_base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+host: http://localhost:11434
+num_ctx: 32768
+
+llm_model_max_async: 4
+llm_model_max_token_size: 32768
+embedding_dim: 768
+embedding_max_token_size: 8192
+
+
+
+
+
