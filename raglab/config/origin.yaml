@@ -1,3 +1,4 @@
+# Data config.
 dataset_home: ../../datasets/
 dataset_dir: _test/
 
@@ -5,6 +6,8 @@ working_dir: working_dir/
 doc_file: dijkstra_mini.txt
 prompts_file: prompts.yaml
 
+
+# Model config.
 llm_model_type: openai-like
 embedding_model_type: ollama
 
@@ -21,14 +24,10 @@ llm_model_max_token_size: 32768
 embedding_dim: 768
 embedding_max_token_size: 8192
 
+# Query config.
 query_mode: [
   "naive",
   # "local",
   # "global",
   # "hybrid"
 ]
-
-
-
-
-

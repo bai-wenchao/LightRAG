@@ -46,10 +46,12 @@ class ConfigManager:
 
     def show_config(self):
         print("*************** Config ***************")
+        print(">> Data config.")
         print(f"working_dir: {self.working_dir}")
         print(f"doc_file: {self.doc_file}")
         print(f"prompt_file: {self.prompts_file}")
 
+        print(">> Model config")
         print(f"llm_model_type: {self.llm_model_type}")
         print(f"embedding_model_type: {self.embedding_model_type}")
 
@@ -66,7 +68,9 @@ class ConfigManager:
         print(f"embedding_dim: {self.embedding_dim}")
         print(f"embedding_max_token_size: {self.embedding_max_token_size}")
 
+        print(">> Query config")
         print(f"query_mode: {self.query_mode}")
+
         print("*************** End ***************")
 
     def get_first_default_prompt(self) -> str:

@@ -2,17 +2,16 @@
 
 from lightrag import QueryParam
 
-from raglab import ConfigManager
-from raglab import RAGFactory
+from raglab import ConfigManager, RAGFactory
 
 
 class RAGManager:
-    def __init__(self, config_path: str):
-        self.config_manager = ConfigManager(config_path=config_path)
-        self.rag_factory = RAGFactory(config_manager=self.config_manager)
+    def __init__(self, config_manager: ConfigManager):
+        self.config_manager = config_manager
+        self.rag_factory = RAGFactory(self.config_manager)
         self.rag_inst = self.rag_factory.rag_inst
 
-    def doc2kg(self):
+    def doc2kg(self) -> None:
         with open(self.config_manager.doc_file, 'r', encoding='utf-8') as file:
             self.rag_inst.insert(file.read())
 
