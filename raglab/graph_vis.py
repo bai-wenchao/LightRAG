@@ -10,10 +10,12 @@ from raglab import ConfigManager
 
 class GraphVis:
     def __init__(self, config_manager: ConfigManager) -> None:
-        self.graph_path = config_manager.dataset_home + config_manager.dataset_dir + \
-            config_manager.working_dir + "graph_chunk_entity_relation.graphml"
+        self.working_dir = config_manager.working_dir
+        self.graph_path = config_manager.working_dir + \
+            "graph_chunk_entity_relation.graphml"
+        self.doc_name = config_manager.doc_file.split(".txt")[0].split("/")[-1]
 
-    def show(self) -> None:
+    def convert(self) -> None:
         # Load the GraphML file
         G = nx.read_graphml(self.graph_path)
 
@@ -28,4 +30,4 @@ class GraphVis:
             node["color"] = "#{:06x}".format(random.randint(0, 0xFFFFFF))
 
         # Save and display the network
-        net.show("knowledge_graph.html")
+        net.show(f"{self.working_dir}{self.doc_name}.html")
