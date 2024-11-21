@@ -4,6 +4,7 @@ import json
 import time
 
 from lightrag import QueryParam
+from lightrag.utils import logger
 
 from raglab import ConfigManager, RAGFactory
 
@@ -21,19 +22,22 @@ class RAGManager:
     def insert_text(self, file_path) -> None:
         with open(file_path, 'r', encoding='utf-8') as file:
             unique_contexts = json.load(file)
-        
-        retries = 0
-        max_retries = self.config_manager.text_insersion_max_retries
-        while retries < max_retries:
-            try:
-                self.rag_inst.insert(unique_contexts)
-                break
-            except Exception as e:
-                retries += 1
-                print(f"Insertion failed, retrying ({retries}/{max_retries}), error: {e}")
-                time.sleep(10)
-        if retries == max_retries:
-            print("Insertion failed after exceeding the maximum number of retries")
+
+        for ctx_idx, ctx in enumerate(unique_contexts):
+            retries = 0
+            max_retries = self.config_manager.text_insersion_max_retries
+            while retries < max_retries:
+                try:
+                    self.rag_inst.insert(unique_contexts)
+                    break
+                except Exception as e:
+                    retries += 1
+                    print(f"Insertion failed, retrying ({retries}/{max_retries}), error: {e}")
+                    time.sleep(10)
+            if retries == max_retries:
+                print("Insertion failed after exceeding the maximum number of retries")
+            print(f"Complete the {ctx_idx} / {len(unique_contexts)} ctx object.")
+            logger.info(f"Complete the {ctx_idx} / {len(unique_contexts)} ctx object.")
     
 
     def exact_query(self, prompt: str, mode: str) -> str:
