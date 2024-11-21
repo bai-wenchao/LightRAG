@@ -35,4 +35,4 @@ query_mode: [
 ]
 
 # Text insersion config.
-text_insersion_max_retries: 3
+text_insersion_max_retries: 5
