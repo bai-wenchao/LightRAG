@@ -32,6 +32,9 @@ class RAGFactory:
                     ),
                 ),
             )
+            print("[Factory] Built an ollama RAG instance.")
+            print(f"[Factory] working dir: {config_manager.working_dir}")
+
         elif config_manager.llm_model_type == "openai-like":
             # LLM model function.
             async def llm_model_func(
@@ -63,3 +66,5 @@ class RAGFactory:
                     ),
                 ),
             )
+            print("[Factory] Built an openai-like RAG instance.")
+            print(f"[Factory] working dir: {config_manager.working_dir}")

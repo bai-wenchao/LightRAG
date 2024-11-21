@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 from raglab import ConfigManager, GraphVis, RAGManager
 
 if __name__ == "__main__":

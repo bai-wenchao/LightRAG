@@ -1,0 +1,38 @@
+# Data config.
+dataset_home: ../../datasets/
+dataset: UltraDomain/
+data_class: cs
+
+working_dir: working_dir/
+context_dir: unique_contexts/
+doc_file: na
+prompts_file: na
+
+
+# Model config.
+llm_model_type: openai-like
+embedding_model_type: ollama
+
+llm_model_name: qwen-plus
+embedding_model_name: nomic-embed-text
+
+api_key_env: DASHSCOPE_API_KEY
+llm_base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+host: http://localhost:11434
+num_ctx: 32768
+
+llm_model_max_async: 4
+llm_model_max_token_size: 32768
+embedding_dim: 768
+embedding_max_token_size: 8192
+
+# Query config.
+query_mode: [
+  "naive",
+  # "local",
+  # "global",
+  # "hybrid"
+]
+
+# Text insersion config.
+text_insersion_max_retries: 3
