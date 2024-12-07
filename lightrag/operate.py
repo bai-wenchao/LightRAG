@@ -269,20 +269,26 @@ async def extract_entities(
         chunk_dp = chunk_key_dp[1]
         content = chunk_dp["content"]
         hint_prompt = entity_extract_prompt.format(**context_base, input_text=content)
+        logger.info("Start LLM inference with hint prompt.")
         final_result = await use_llm_func(hint_prompt)
+        logger.info("Finished LLM inference with result")
 
         history = pack_user_ass_to_openai_messages(hint_prompt, final_result)
         for now_glean_index in range(entity_extract_max_gleaning):
+            logger.info("Start LLM inference with continue_prompt")
             glean_result = await use_llm_func(continue_prompt, history_messages=history)
+            logger.info("Finished LLM inference with glean_result")
 
             history += pack_user_ass_to_openai_messages(continue_prompt, glean_result)
             final_result += glean_result
             if now_glean_index == entity_extract_max_gleaning - 1:
                 break
-
+            
+            logger.info("Start LLM inference with if_loop_result.")
             if_loop_result: str = await use_llm_func(
                 if_loop_prompt, history_messages=history
             )
+            logger.info("Finished LLM inference with if_loop_result")
             if_loop_result = if_loop_result.strip().strip('"').strip("'").lower()
             if if_loop_result != "yes":
                 break
@@ -458,7 +464,7 @@ async def local_query(
             .strip()
         )
 
-    return response
+    return sys_prompt, response
 
 
 async def _build_local_query_context(
@@ -735,7 +741,7 @@ async def global_query(
             .strip()
         )
 
-    return response
+    return sys_prompt, response
 
 
 async def _build_global_query_context(
@@ -995,7 +1001,7 @@ async def hybrid_query(
             .replace("</system>", "")
             .strip()
         )
-    return response
+    return sys_prompt, response
 
 
 def combine_contexts(high_level_context, low_level_context):
@@ -1108,4 +1114,33 @@ async def naive_query(
             .strip()
         )
 
-    return response
+    return sys_prompt, response
+
+
+async def direct_query(
+    query,
+    chunks_vdb: BaseVectorStorage,
+    text_chunks_db: BaseKVStorage[TextChunkSchema],
+    query_param: QueryParam,
+    global_config: dict,
+):
+    use_model_func = global_config["llm_model_func"]
+    sys_prompt = ""
+    response = await use_model_func(
+        query,
+        system_prompt=sys_prompt,
+    )
+
+    if len(response) > len(sys_prompt):
+        response = (
+            response[len(sys_prompt) :]
+            .replace(sys_prompt, "")
+            .replace("user", "")
+            .replace("model", "")
+            .replace(query, "")
+            .replace("<system>", "")
+            .replace("</system>", "")
+            .strip()
+        )
+
+    return sys_prompt, response

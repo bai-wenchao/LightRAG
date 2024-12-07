@@ -1,7 +1,7 @@
 # Data config.
 dataset_home: ../datasets/
-dataset: UltraDomain/
-data_class: cs
+dataset: newsdata/
+data_class: politic
 
 working_dir: working_dir/
 context_dir: unique_contexts/
@@ -13,7 +13,7 @@ prompts_file: na
 llm_model_type: openai-like
 embedding_model_type: ollama
 
-llm_model_name: qwen-max
+llm_model_name: qwen-plus
 embedding_model_name: nomic-embed-text
 
 api_key_env: DASHSCOPE_API_KEY

@@ -16,6 +16,7 @@ from .operate import (
     global_query,
     hybrid_query,
     naive_query,
+    direct_query,
 )
 
 from .utils import (
@@ -291,6 +292,83 @@ class LightRAG:
             if update_storage:
                 await self._insert_done()
 
+    async def ainsert_seq(self, string_or_strings):
+        update_storage = False
+        if isinstance(string_or_strings, str):
+            string_or_strings = [string_or_strings]
+        new_docs = {
+            compute_mdhash_id(c.strip(), prefix="doc-"): {"content": c.strip()}
+            for c in string_or_strings
+        }
+        _add_doc_keys = await self.full_docs.filter_keys(list(new_docs.keys()))
+        new_docs = {k: v for k, v in new_docs.items() if k in _add_doc_keys}
+        if not len(new_docs):
+            logger.warning("All docs are already in the storage")
+            return
+        update_storage = True
+        logger.info(f"[New Docs] inserting {len(new_docs)} docs")
+        inserting_chunks = {}
+        for doc_key, doc in new_docs.items():
+            chunks = {
+                compute_mdhash_id(dp["content"], prefix="chunk-"): {
+                    **dp,
+                    "full_doc_id": doc_key,
+                }
+                for dp in chunking_by_token_size(
+                    doc["content"],
+                    overlap_token_size=self.chunk_overlap_token_size,
+                    max_token_size=self.chunk_token_size,
+                    tiktoken_model=self.tiktoken_model_name,
+                )
+            }
+            inserting_chunks.update(chunks)
+        _add_chunk_keys = await self.text_chunks.filter_keys(
+            list(inserting_chunks.keys())
+        )
+        inserting_chunks = {
+            k: v for k, v in inserting_chunks.items() if k in _add_chunk_keys
+        }
+        if not len(inserting_chunks):
+            logger.warning("All chunks are already in the storage")
+            return
+        logger.info(f"[New Chunks] inserting {len(inserting_chunks)} chunks")
+
+        await self.chunks_vdb.upsert(inserting_chunks)
+
+        logger.info("Upserted the embedded chunks to the vector db")
+
+        logger.info("[Entity Extraction]...")
+
+        completed_chunks = 0
+        for chunk_id, chunk in inserting_chunks.items():
+            try:
+                logger.info(f"Extracting entities from chunk {completed_chunks + 1} / {len(inserting_chunks)}")
+                inserting_chunk = {chunk_id: chunk}
+                maybe_new_kg = await extract_entities(
+                    inserting_chunk,
+                    knowledge_graph_inst=self.chunk_entity_relation_graph,
+                    entity_vdb=self.entities_vdb,
+                    relationships_vdb=self.relationships_vdb,
+                    global_config=asdict(self),
+                )
+                logger.info(f"Extracted entities from chunk {completed_chunks + 1} / {len(inserting_chunks)}")
+                if maybe_new_kg is None:
+                    logger.warning("No new entities and relationships found")
+                    return
+                self.chunk_entity_relation_graph = maybe_new_kg
+
+                await self.full_docs.upsert(new_docs)
+                logger.info("Upserted the embedded docs to the vector db")
+                await self.text_chunks.upsert(inserting_chunks)
+                logger.info("Upserted the embedded chunks to the vector db")
+                completed_chunks += 1
+            
+            finally:
+                if update_storage:
+                    await self._insert_done()
+            
+            logger.info(f"Inserted {completed_chunks} chunks")
+
     async def _insert_done(self):
         tasks = []
         for storage_inst in [
@@ -344,6 +422,14 @@ class LightRAG:
             )
         elif param.mode == "naive":
             response = await naive_query(
+                query,
+                self.chunks_vdb,
+                self.text_chunks,
+                param,
+                asdict(self),
+            )
+        elif param.mode == "direct":
+            response = await direct_query(
                 query,
                 self.chunks_vdb,
                 self.text_chunks,
