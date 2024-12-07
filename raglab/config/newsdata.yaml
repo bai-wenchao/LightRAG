@@ -1,7 +1,7 @@
 # Data config.
 dataset_home: ../datasets/
-dataset: UltraDomain/
-data_class: cs
+dataset: newsdata/
+data_class: politic
 
 working_dir: working_dir/
 context_dir: unique_contexts/

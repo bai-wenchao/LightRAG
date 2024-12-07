@@ -38,6 +38,26 @@ class RAGManager:
                 print("Insertion failed after exceeding the maximum number of retries")
             print(f"Complete the {ctx_idx} / {len(unique_contexts)} ctx object.")
             logger.info(f"Complete the {ctx_idx} / {len(unique_contexts)} ctx object.")
+
+    def insert_article(self, file_path) -> None:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = file.read()
+
+        retries = 0
+        max_retries = self.config_manager.text_insersion_max_retries
+        while retries < max_retries:
+            try:
+                self.rag_inst.insert(data)
+                break
+            except Exception as e:
+                retries += 1
+                print(f"Insertion failed, retrying ({retries}/{max_retries}), error: {e}")
+                time.sleep(10)
+        if retries == max_retries:
+            print("Insertion failed after exceeding the maximum number of retries")
+        print("Complete the article insersion.")
+        logger.info("Complete the artival insersion")
+        
     
 
     def exact_query(self, prompt: str, mode: str) -> str:
